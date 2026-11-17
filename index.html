@@ -6653,6 +6653,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
 
         function addInv(c, id) {
             const it = { ...ITEMS[id] };
+            if (it.type === 'B' && c.inv.some(i => i.id === id)) return false;   // only 1 of each completed item per champion
             if (c.inv.length >= 6) {
                 const k = c.inv.findIndex(i => i.type === 'S');
                 if (k >= 0) c.inv.splice(k, 1); else return false;
@@ -7946,6 +7947,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
         const psRoom = (c, used) => c.inv.length - used.length < 6 || c.inv.some(i => i.type === 'S' && !used.includes(i));
         function buyManual(id) {
             const m = state.liveMatch, c = myChamp(m), it = ITEMS[id]; if (!c || !it || m.done) return;
+            if (it.type === 'B' && c.inv.some(i => i.id === id)) { addMatchLog(`You already own ${it.name}: only 1 of each completed item.`, "text-red-300"); return; }
             const { used, need } = psCost(c, it);
             if (c.gold < need || !psRoom(c, used)) return;
             c.gold -= need; c.spent += need; c.inv = c.inv.filter(i => !used.includes(i)); addInv(c, id);
