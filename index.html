@@ -657,6 +657,11 @@ function regIcon(reg, px) { const u = REGION_IMG[reg]; return u ? `<span class="
                     <i class="fa-solid fa-user-astronaut w-4"></i>
                     <span>My Career</span>
                 </button>
+                <button onclick="switchTab('todo')" id="nav-todo" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold text-gray-400 hover:text-white hover:bg-lol-border/50 transition-all border border-transparent">
+                    <i class="fa-solid fa-list-check w-4"></i>
+                    <span>To-Do List</span>
+                    <span id="nav-todo-badge" class="hidden ml-auto text-[9px] px-1.5 py-0.5 rounded bg-yellow-500/20 text-yellow-300 border border-yellow-500/40 font-black">0</span>
+                </button>
                 <button onclick="switchTab('roster')" id="nav-roster" class="w-full flex items-center space-x-3 px-3 py-2.5 rounded-lg text-xs font-bold transition-all bg-lol-gold/10 text-lol-gold border border-lol-gold/30">
                     <i class="fa-solid fa-users w-4"></i>
                     <span>Roster & Negotiate</span>
@@ -751,6 +756,7 @@ function regIcon(reg, px) { const u = REGION_IMG[reg]; return u ? `<span class="
                 </div>
             </section>
             <section id="tab-invest" class="tab-content space-y-6 hidden"></section>
+            <section id="tab-todo" class="tab-content space-y-4 hidden"></section>
             <!-- TAB 1: ROSTER & NEGOTIATION -->
             <section id="tab-roster" class="tab-content space-y-6">
                 <div class="flex items-center justify-between">
@@ -771,7 +777,7 @@ function regIcon(reg, px) { const u = REGION_IMG[reg]; return u ? `<span class="
                 <!-- TRANSFER OFFERS FROM OTHER CLUBS -->
                 <div id="offers-panel" class="mgr-only"></div>
                 <!-- STARTING FIVE (cards) -->
-                <div class="flex items-center justify-between"><h3 class="text-lg font-bold text-white"><i class="fa-solid fa-users text-lol-gold mr-2"></i>Starting Five</h3><span class="text-[11px] text-gray-500">OVR colours: <b style="color:#c084fc">95+</b> <b style="color:#38bdf8">85-94</b> <b style="color:#4ade80">80-84</b> <b style="color:#fb923c">75-79</b> <b style="color:#facc15">70-74</b> <b style="color:#f87171">&lt;70</b></span></div>
+                <div class="flex items-center justify-between"><h3 class="text-lg font-bold text-white"><i class="fa-solid fa-users text-lol-gold mr-2"></i>Starting Five</h3></div>
                 <div id="roster-table-body" class="grid grid-cols-1 xl:grid-cols-2 gap-4"></div>
                 <!-- BENCH -->
                 <div class="mgr-only space-y-3 pt-2">
@@ -2259,6 +2265,7 @@ Zoe|Portal Jump|40|30|stealth`;
             { id: 2, name: "Regional Season (1st Half)", eloMult: 1.2, payout: REG_H1_PAYOUT, desc: "18-round double round-robin split. All series are Best of 3 (Bo3). The top 6 teams advance to the Road to MSI.", isInternational: false },
             { id: 7, name: "Road to MSI", eloMult: 1.3, payout: Math.round(REG_H1_PAYOUT * ROAD_TO_MSI_POOL_PCT), desc: "Top 6 of the 1st-half league, full double-elimination bracket (Bo5). The top finishers earn your region's MSI slots. Prize pool = 30% of the Regional Season (1st Half) pool.", isInternational: false },
             { id: 3, name: "Mid-Season Invitational (MSI)", eloMult: 2.0, payout: 2000000, desc: "Play-In: seed 2 of the regions ranked #2-#5 (Bo5 double elimination), the winner joins the 8-team Bo5 double-elimination bracket with the 6 regional seed 1s and the seed 2 of the #1 region.", isInternational: true },
+            { id: 8, name: "Esports World Cup", eloMult: 0, payout: 2000000, desc: "Separate event after MSI (no Elo change, MSI-sized prize pool): 16 teams - the best 2 of every region by Road to MSI + the 3rd best of the 4 top regions. 4 groups of 4 (Bo5 double elimination); the top 2 of each group reach the Bo5 knockout quarterfinals (A1-B2, C1-D2, B1-A2, D1-C2).", isInternational: true },
             { id: 4, name: "Regional Season (2nd Half)", eloMult: 1.2, payout: 2500000, desc: "Split into Group A and Group B by the 1st-half table; every team plays each group rival 3 times (Bo3). Group A = seeds 1-5, Group B = seeds 6-10. Seeds 1-4 go straight to the Regional Qualifier; seeds 5-8 play a Bo5 double-elimination Play-In whose 2 qualifiers become seeds 5 and 6.", isInternational: false },
             { id: 5, name: "Regional Qualifier for Worlds", eloMult: 1.5, payout: 1500000, desc: "Top 6 teams, full double-elimination bracket (Bo5). Top 4 seed your region into Worlds.", isInternational: false },
             { id: 6, name: "World Championship", eloMult: 2.5, payout: 3000000, desc: "Bo5 double-elimination Play-In (4 teams, the winner takes the 16th slot), then a 16-team Swiss stage (3 wins qualify / 3 losses out; Bo1, Bo3 deciders) and Bo5 knockouts.", isInternational: true }
@@ -2307,6 +2314,8 @@ Zoe|Portal Jump|40|30|stealth`;
                     return rank === 1 ? 0.375 : rank === 2 ? 0.25 : rank <= 4 ? 0.125 : 0.25 / Math.max(1, nTeams - 4);
                 case 3:                   // MSI (8 teams)
                     return rank === 1 ? 0.375 : rank === 2 ? 0.25 : rank <= 4 ? 0.125 : 0.25 / 4;
+                case 8:                   // Esports World Cup (16 teams, MSI-sized pool)
+                    return rank === 1 ? 0.30 : rank === 2 ? 0.18 : rank <= 4 ? 0.10 : rank <= 8 ? 0.055 : 0.10 / 8;
                 case 5: case 7:           // Regional Qualifier / Road to MSI (6 teams)
                     return [0, 0.40, 0.25, 0.15, 0.10, 0.05, 0.05][rank] || 0;
                 case 6:                   // Worlds (16 teams)
@@ -2377,7 +2386,7 @@ Zoe|Portal Jump|40|30|stealth`;
             return Math.max(5, Math.min(99, Math.round(v)));
         }
         function eventPressure() {   // 0 = regular event, 0.5 = regional qualifier, 1 = MSI / Worlds
-            try { const st = SEASON_STAGES[state.stageIndex]; if (!st) return 0; return st.eloMult >= 2 ? 1 : st.eloMult >= 1.5 ? 0.5 : 0; } catch (e) { return 0; }
+            try { const st = SEASON_STAGES[state.stageIndex]; if (!st) return 0; if (st.id === 8) return 1; return st.eloMult >= 2 ? 1 : st.eloMult >= 1.5 ? 0.5 : 0; } catch (e) { return 0; }
         }
         function chokeMult(p, pr) {
             if (pr == null) pr = eventPressure(); if (!pr || !p) return 1;
@@ -3247,6 +3256,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             userRegion: 'LCK',
             budget: 0,
             year: 2026,
+            ewcStage: true,
             stageIndex: 0,
             currentRound: 1,
             totalRounds: 6,
@@ -3699,27 +3709,67 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             if (includeStay) res.unshift(mk({ t: team, reg: state.userRegion, inc: null }, true));
             return res;
         }
+        let _negRegion = 'ALL', _negOpen = false;
+        // success chance of negotiating with club t: a club far stronger than the player is hard to convince (-5.5% per OVR of gap); a weaker club is easy
+        function negGap(cur, t) { return (parseFloat(getAvgOvr(t)) || 0) - cur.p.ovr; }
+        function negChance(cur, t) { const g = negGap(cur, t); return Math.max(0.02, Math.min(0.97, g > 0 ? 0.85 - g * 0.055 : 0.85 + Math.min(0.1, -g * 0.01))); }
         function openOffers(kind) {
             const cur = findMyPlayer(); if (!cur) return;
             if (kind === 'request') { if (state.player.requestYear === state.year) { alert('You already made a transfer request this season.'); return; } if (state.player.pendingMove) { alert('You already have a planned move. Cancel it first.'); return; } }
-            _offerKind = kind; _offers = genPlayerOffers(cur, kind === 'expiry');
+            _offerKind = kind; _offers = genPlayerOffers(cur, kind === 'expiry'); _negOpen = false;
+            drawOffersModal();
+        }
+        function drawOffersModal(msg) {
+            const cur = findMyPlayer(); if (!cur) return; const kind = _offerKind;
             let m = document.getElementById('career-modal');
             if (!m) { m = document.createElement('div'); m.id = 'career-modal'; m.className = 'fixed inset-0 bg-black/85 backdrop-blur-sm flex items-center justify-center p-4'; m.style.zIndex = 90; document.body.appendChild(m); }
             m.classList.remove('hidden');
-            const rows = _offers.map((o, i) => { const t = getTeamById(o.teamId); return `<div class="flex items-center gap-3 bg-lol-cardBg border ${o.stay ? 'border-lol-gold/60' : 'border-lol-border'} rounded-xl p-3">
+            const rows = _offers.map((o, i) => { const t = getTeamById(o.teamId); return `<div class="flex items-center gap-3 bg-lol-cardBg border ${o.stay ? 'border-lol-gold/60' : o.neg ? 'border-green-500/50' : 'border-lol-border'} rounded-xl p-3">
                 <span class="shrink-0">${teamLogo(t, 32)}</span>
-                <div class="flex-1 min-w-0"><div class="font-extrabold text-sm text-white">${o.name} ${o.stay ? '<span class="text-[10px] text-lol-gold font-black">(CURRENT TEAM &mdash; RE-SIGN)</span>' : `<span class="text-[10px] text-gray-500">${o.reg}</span>`}</div>
+                <div class="flex-1 min-w-0"><div class="font-extrabold text-sm text-white">${o.name} ${o.stay ? '<span class="text-[10px] text-lol-gold font-black">(CURRENT TEAM &mdash; RE-SIGN)</span>' : `<span class="text-[10px] text-gray-500">${o.reg}</span>`}${o.neg ? ' <span class="text-[10px] text-green-400 font-black">NEGOTIATED</span>' : ''}</div>
                     <div class="text-[11px] text-gray-400">Elo ${o.elo} &bull; Avg OVR ${o.avg}${o.stay ? '' : ` &bull; Starter ${cur.role}: replaces ${o.incName} (${o.incOvr})`}</div></div>
                 <div class="text-right text-xs"><div class="font-black text-green-400">${usd(o.salary)} / event</div><div class="text-gray-400">${o.years} year${o.years > 1 ? 's' : ''}</div></div>
-                <button onclick="acceptOffer(${i})" class="px-3 py-1.5 bg-gradient-to-r from-lol-gold to-lol-darkGold text-lol-navy font-extrabold text-xs rounded-lg hover:brightness-110">${o.stay ? 'Re-sign' : 'Sign'}</button></div>`; }).join('');
+                <button onclick="acceptPlayerOffer(${i})" class="px-3 py-1.5 bg-gradient-to-r from-lol-gold to-lol-darkGold text-lol-navy font-extrabold text-xs rounded-lg hover:brightness-110">${o.stay ? 'Re-sign' : 'Sign'}</button></div>`; }).join('');
+            const rej = (state.player && state.player.rejected) || {};
+            const clubs = [];
+            Object.entries(state.teams).forEach(([reg, arr]) => arr.forEach(t => { if (t.id === cur.team.id || !t.roster[cur.role]) return; if (_negRegion !== 'ALL' && reg !== _negRegion) return; clubs.push({ t, reg, avg: parseFloat(getAvgOvr(t)) || 0 }); }));
+            clubs.sort((a, b) => b.avg - a.avg);
+            const crow = c => { const ch = negChance(cur, c.t), pc = Math.round(ch * 100), has = _offers.some(o => o.teamId === c.t.id), no = rej[c.t.id] === state.year, inc = c.t.roster[cur.role], g = negGap(cur, c.t);
+                const col = pc >= 70 ? 'text-green-400' : pc >= 40 ? 'text-yellow-300' : 'text-red-400';
+                return `<div class="flex items-center gap-2 bg-lol-cardBg border border-lol-border rounded-lg px-2.5 py-1.5 text-[11px]"><span class="shrink-0">${teamLogo(c.t, 22)}</span>
+                    <div class="flex-1 min-w-0"><div class="font-bold text-white truncate">${c.t.name} <span class="text-gray-500 font-normal">${c.reg}</span></div><div class="text-gray-400">Avg OVR ${c.avg.toFixed(1)} (${g > 0 ? '+' : ''}${g.toFixed(1)} vs you) &bull; ${cur.role}: ${inc.name} (${inc.ovr})</div></div>
+                    <span class="font-black ${col} w-10 text-right" title="Chance that the club agrees">${pc}%</span>
+                    ${has ? '<span class="text-green-400 font-black w-20 text-center">Offer made</span>' : no ? '<span class="text-red-400 font-black w-20 text-center">Refused</span>' : `<button onclick="negotiateClub('${c.t.id}')" class="w-20 px-2 py-1 bg-lol-brightBlue/20 text-lol-brightBlue border border-lol-brightBlue/40 font-black rounded hover:bg-lol-brightBlue/30">Negotiate</button>`}</div>`; };
+            const negBox = `<details ${_negOpen ? 'open' : ''} ontoggle="_negOpen=this.open" class="bg-lol-navy/60 border border-lol-border rounded-xl p-2.5"><summary class="cursor-pointer select-none text-xs font-black text-lol-brightBlue uppercase">Negotiate with any club</summary>
+                <div class="text-[10px] text-gray-400 py-1.5">Pick any club. The bigger the gap between the club's average OVR and yours (club stronger than you), the lower the chance. A refusal closes that club until next season.</div>
+                <div class="flex items-center gap-2 pb-1.5"><span class="text-[10px] text-gray-400 font-bold">Region</span><select onchange="_negRegion=this.value;_negOpen=true;drawOffersModal()" class="bg-lol-cardBg border border-lol-border text-lol-gold rounded p-1 text-[11px] font-bold">${['ALL', ...ALL_REGIONS].map(r => `<option value="${r}" ${r === _negRegion ? 'selected' : ''}>${r === 'ALL' ? 'All regions' : r}</option>`).join('')}</select></div>
+                <div class="space-y-1 max-h-64 overflow-y-auto custom-scrollbar pr-1">${clubs.map(crow).join('') || '<div class="text-xs text-gray-500">No clubs.</div>'}</div></details>`;
             m.innerHTML = `<div class="max-w-2xl w-full max-h-[90vh] overflow-y-auto custom-scrollbar bg-lol-navy border border-lol-gold rounded-2xl p-5 space-y-3">
                 <div><div class="text-lg font-black text-gradient-gold">${kind === 'expiry' ? 'Your contract has expired' : 'Transfer request'}</div>
                 <div class="text-[11px] text-gray-400">${kind === 'expiry' ? `${cur.p.name} (${cur.role}, ${cur.p.ovr} OVR) is out of contract. Choose where to play next season.` : `Clubs interested in ${cur.p.name} (${cur.role}, ${cur.p.ovr} OVR). ${isFreeSwitchWindow() ? 'The move happens right away.' : 'If you sign, the move happens after the World Championship.'}`}</div></div>
+                ${msg ? `<div class="text-xs font-bold px-3 py-2 rounded-lg ${msg.ok ? 'bg-green-500/15 text-green-300 border border-green-500/40' : 'bg-red-500/15 text-red-300 border border-red-500/40'}">${msg.t}</div>` : ''}
                 ${rows}
+                ${negBox}
                 ${kind === 'request' ? '<div class="text-right"><button onclick="closeOffers()" class="px-4 py-2 bg-lol-cardBg border border-lol-border text-gray-300 text-xs font-bold rounded-lg hover:border-lol-gold/60">Stay at my club</button></div>' : ''}</div>`;
         }
+        function negotiateClub(teamId) {
+            const cur = findMyPlayer(), t = getTeamById(teamId); if (!cur || !t || !state.player) return;
+            const pl = state.player; pl.rejected = pl.rejected || {};
+            if (pl.rejected[teamId] === state.year || _offers.some(o => o.teamId === teamId)) return;
+            _negOpen = true;
+            const ch = negChance(cur, t), g = negGap(cur, t);
+            if (__rand() < ch) {
+                const inc = t.roster[cur.role], reg = Object.keys(state.teams).find(r => state.teams[r].some(x => x.id === t.id)) || '';
+                const base = calcStatSalary(cur.p.ovr), sal = Math.round(base * Math.max(0.8, Math.min(1.35, 0.8 + ((t.elo || 1500) - 1400) / 1000)) * (0.95 + __rand() * 0.15) * (g > 0 ? 1 - Math.min(0.25, g * 0.015) : 1));
+                _offers.push({ teamId: t.id, name: t.name, reg, elo: Math.round(t.elo || 1500), avg: getAvgOvr(t), incName: inc ? inc.name : '', incOvr: inc ? inc.ovr : 0, salary: sal, years: rndInt(1, 3), stay: false, neg: true });
+                drawOffersModal({ ok: true, t: `${t.name} agreed (${Math.round(ch * 100)}% chance): ${usd(sal)} / event. Press Sign to join them.` });
+            } else {
+                pl.rejected[teamId] = state.year;
+                drawOffersModal({ ok: false, t: `${t.name} refused (${Math.round(ch * 100)}% chance). They will not talk again this season.` });
+            }
+        }
         function closeOffers() { const m = document.getElementById('career-modal'); if (m) m.classList.add('hidden'); }
-        function acceptOffer(i) {
+        function acceptPlayerOffer(i) {
             const o = _offers[i], cur = findMyPlayer(); if (!o || !cur) return;
             if (o.stay) { cur.p.salary = o.salary; cur.p.contractYears = o.years; cur.p.mood = 100; careerLog(`Re-signed with ${o.name}: ${o.years}y, ${usd(o.salary)}/event`); state.player.needOffer = false; }
             else if (_offerKind === 'expiry' || isFreeSwitchWindow()) { movePlayerNow(o); state.player.needOffer = false; state.player.pendingMove = null; }
@@ -4572,7 +4622,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             const own = document.getElementById('cm-own'); if (!own) return;
             ensureUserCoaches(); state.coachMarket = state.coachMarket || [];
             const cs = state.coaches, money = n => '$' + n.toLocaleString();
-            document.getElementById('cm-budget').textContent = money(Math.round(state.budget));
+            document.getElementById('cm-budget').textContent = money(Math.round(state.budget)); paintBudget(document.getElementById('cm-budget'));
             // replace box (only when the staff is full)
             const wrap = document.getElementById('cm-replace-wrap'), sel = document.getElementById('cm-replace');
             wrap.classList.toggle('hidden', cs.length < COACH_MAX);
@@ -5328,6 +5378,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 if (st.id === 4) return [c, c + 3];   // + up to 3 Play-In series
                 return [c, c];
             }
+            if (st.id === 8) return [2, 6];                    // group (2-3 Bo5) + QF + SF + F
             if (st.id === 3) return [2, 10];                   // Play-In + double elimination (Bo5)
             if (st.id === 5 || st.id === 7) { const seed = (inCurrent && T && T.seeds) ? T.seeds.findIndex(t => t.id === state.userTeamId) : 2; return [2, seed >= 0 && seed < 2 ? 5 : 6]; }   // double elimination
             return [3, 12];                                    // Worlds: (Play-In) + Swiss out 0-3 ... 3-2 + QF + SF + F
@@ -5435,7 +5486,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                     <div class="text-right"><div class="text-2xl font-black ${cls(delta)}">${delta >= 0 ? '&#9650;' : '&#9660;'} ${money(delta)}</div><div class="text-xs font-bold ${cls(delta)}">${start > 0 ? (pct >= 0 ? '+' : '') + pct.toFixed(1) + '%' : ''}</div></div>
                 </div>
                 <div class="grid grid-cols-2 gap-3 text-xs"><div class="bg-lol-navy rounded-lg p-3 border border-lol-border"><div class="text-gray-400 font-bold uppercase text-[10px]">Start of season</div><div class="text-white font-black text-base">$${Math.round(start).toLocaleString()}</div></div>
-                <div class="bg-lol-navy rounded-lg p-3 border border-lol-border"><div class="text-gray-400 font-bold uppercase text-[10px]">Now</div><div class="text-white font-black text-base">$${Math.round(state.budget).toLocaleString()}</div></div></div>
+                <div class="bg-lol-navy rounded-lg p-3 border border-lol-border"><div class="text-gray-400 font-bold uppercase text-[10px]">Now</div><div class="font-black text-base ${state.budget < 0 ? 'text-red-400' : 'text-white'}">$${Math.round(state.budget).toLocaleString()}</div></div></div>
                 <div class="text-xs">${log.length ? log.map(x => row(x.event + ' (net after tax)', x.net)).join('') : '<div class="text-gray-500 italic py-1">No event finished yet this season.</div>'}${Math.abs(other) >= 1 ? row('Transfers, signing fees, sponsor bonuses, training & other', other) : ''}</div>
             </div>`;
         }
@@ -5586,7 +5637,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             if (!winnerTeam || !loserTeam || winnerTeam.elo === undefined || loserTeam.elo === undefined) return;
             if (winnerTeam.id === state.userTeamId) seriesFatigueRecovery(true); else if (loserTeam.id === state.userTeamId) seriesFatigueRecovery(false);
             winnerTeam.wins = (winnerTeam.wins || 0) + 1; loserTeam.losses = (loserTeam.losses || 0) + 1;
-            updateEloMatchResult(winnerTeam, loserTeam, true, mult);
+            if (mult) updateEloMatchResult(winnerTeam, loserTeam, true, mult);   // mult 0 (Esports World Cup): no Elo change
             [winnerTeam, loserTeam].forEach(t => { const T = state.tournament, r = T && T.standings && T.standings.find(x => x.id === t.id); if (r) r.elo = t.elo; });
         }
 
@@ -5736,6 +5787,13 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                     T.standings = T.teams.map(t => mkStand(t));
                     const d = (id, a, b, label) => mkM(T, id, a, b, { phase: 'DE', label, bo: 5 });
                     T.rounds = [[d('PA', pi[0], pi[3], 'Play-In • UB Round 1'), d('PB', pi[1], pi[2], 'Play-In • UB Round 1')]];
+                } else if (st.id === 8) {
+                    T.format = 'EWC'; const gr = drawEWCGroups(getEWCTeams()); T.groups = {};
+                    Object.entries(gr).forEach(([L, ts]) => { T.groups[L] = ts.map(t => t.id); ts.forEach(t => { T.teams.push(t); T.standings.push(mkStand(t, { group: L })); }); });
+                    T.rounds = [[]];
+                    Object.entries(gr).forEach(([L, ts]) => {
+                        T.rounds[0].push(mkM(T, 'G' + L + '1', ts[0], ts[3], { phase: 'DE', label: `Group ${L} \u2022 Opening match`, bo: 5 }), mkM(T, 'G' + L + '2', ts[1], ts[2], { phase: 'DE', label: `Group ${L} \u2022 Opening match`, bo: 5 }));
+                    });
                 } else if (st.id === 6) {
                     T.format = 'WORLDS_SWISS'; const wq = getWorldsTeams(), pi = wq.playin;
                     T.piSeeds = pi; T.teams = [...wq.direct, ...pi];
@@ -5749,6 +5807,35 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             state.currentRound = 1;
             state.totalRounds = state.tournament.rounds.length;
             renderTournamentUI();
+        }
+
+
+        // ESPORTS WORLD CUP (event after MSI): 16 teams = the best 2 of every region by Road to MSI + the 3rd best of the 4 top regions.
+        function getEWCTeams() {
+            const rank = state.regionRank && state.regionRank.length === ALL_REGIONS.length ? state.regionRank : regionStats().map(x => x.r);
+            const seqOf = r => {
+                const sorted = [...(state.teams[r] || [])].sort(eloDesc);
+                const ord = (state.msiOrder && state.msiOrder[r]) ? [...state.msiOrder[r].map(getTeamById).filter(Boolean), ...sorted] : sorted;
+                const seq = []; ord.forEach(t => { if (!seq.some(x => x.id === t.id)) seq.push(t); }); return seq;
+            };
+            const out = [], used = new Set(), add = t => { if (t && !used.has(t.id)) { used.add(t.id); out.push(t); return true; } return false; };
+            ALL_REGIONS.forEach(r => { const q = seqOf(r); add(q[0]); add(q[1]); });
+            rank.slice(0, 4).forEach(r => add(seqOf(r)[2]));
+            const rest = Object.values(state.teams).flat().filter(t => !used.has(t.id)).sort(eloDesc);
+            while (out.length < 16 && rest.length) add(rest.shift());
+            return out;
+        }
+        // 4 pots by Elo, one team of each pot per group; random draw, retried to avoid same-region teams in a group
+        function drawEWCGroups(teams) {
+            const pots = [0, 1, 2, 3].map(i => [...teams].sort(eloDesc).slice(i * 4, i * 4 + 4));
+            const shuf = a => { a = [...a]; for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(__rand() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+            let best = null, bestC = 1e9;
+            for (let k = 0; k < 60 && bestC > 0; k++) {
+                const sp = pots.map(shuf), g = [0, 1, 2, 3].map(i => sp.map(p => p[i]).filter(Boolean));
+                let c = 0; g.forEach(x => { const seen = {}; x.forEach(t => { const r = regionOfTeamById(t.id); if (r) { if (seen[r]) c++; seen[r] = 1; } }); });
+                if (c < bestC) { bestC = c; best = g; }
+            }
+            return { A: best[0], B: best[1], C: best[2], D: best[3] };
         }
 
         function generateRoundRobinSchedule(teamList, doubleRoundRobin = false) {
@@ -5903,6 +5990,18 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                     T.rounds.push([ko('SF1', A[0], B[1], 'Semifinal: A1 vs B2'), ko('SF2', B[0], A[1], 'Semifinal: B1 vs A2')]);
                 } else if (idx === 3) T.rounds.push([ko('F', W('SF1'), W('SF2'), 'Grand Final')]);
                 else if (idx >= 4) T.done = true;
+            } else if (T.format === 'EWC') {
+                const GL = ['A', 'B', 'C', 'D'], ko2 = (id, a, b, label) => mkM(T, id, a, b, { phase: 'KO', label, bo: 5 }), dg = (id, a, b, label) => mkM(T, id, a, b, { phase: 'DE', label, bo: 5 });
+                if (idx === 0) T.rounds.push(GL.flatMap(g => [dg('G' + g + 'W', W('G' + g + '1'), W('G' + g + '2'), `Group ${g} \u2022 Winners match`), dg('G' + g + 'L', L('G' + g + '1'), L('G' + g + '2'), `Group ${g} \u2022 Elimination match`)]));
+                else if (idx === 1) T.rounds.push(GL.map(g => dg('G' + g + 'D', L('G' + g + 'W'), W('G' + g + 'L'), `Group ${g} \u2022 Decider (winner qualifies)`)));
+                else if (idx === 2) {
+                    const q1 = {}, q2 = {}; GL.forEach(g => { q1[g] = W('G' + g + 'W'); q2[g] = W('G' + g + 'D'); });
+                    T.qualIds = GL.flatMap(g => [q1[g].id, q2[g].id]);
+                    T.rounds.push([ko2('QF1', q1.A, q2.B, 'Quarterfinal 1 (A1 vs B2)'), ko2('QF2', q1.C, q2.D, 'Quarterfinal 2 (C1 vs D2)'), ko2('QF3', q1.B, q2.A, 'Quarterfinal 3 (B1 vs A2)'), ko2('QF4', q1.D, q2.C, 'Quarterfinal 4 (D1 vs C2)')]);
+                }
+                else if (idx === 3) T.rounds.push([ko2('SF1', W('QF1'), W('QF2'), 'Semifinal 1'), ko2('SF2', W('QF3'), W('QF4'), 'Semifinal 2')]);
+                else if (idx === 4) T.rounds.push([ko2('F', W('SF1'), W('SF2'), 'Grand Final')]);
+                else T.done = true;
             } else if (T.format === 'MSI_DE') {
                 const P = 'Play-In • ';
                 if (idx === 0) T.rounds.push([de('PC', W('PA'), W('PB'), P + 'Upper Final'), de('PD', L('PA'), L('PB'), P + 'Lower R1')]);
@@ -5989,6 +6088,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             let champ, ru, order = [];
             if (T.format === 'ROUND_ROBIN') { T.standings.forEach((s, i) => out[s.id] = { label: i === 0 ? 'Champion' : `#${i + 1}`, rank: i + 1 }); champ = T.standings[0].id; ru = T.standings[1].id; }
             else if (T.format === 'MSI_GROUPS') { champ = win('F'); ru = lose('F'); set([champ], 'Champion', 1); set([ru], 'Runner-up', 2); set([lose('SF1'), lose('SF2')], '3rd-4th', 3); T.standings.forEach(s => set([s.id], '5th-8th', 5)); }
+            else if (T.format === 'EWC') { champ = win('F'); ru = lose('F'); set([champ], 'Champion', 1); set([ru], 'Runner-up', 2); set([lose('SF1'), lose('SF2')], '3rd-4th', 3); set(['QF1', 'QF2', 'QF3', 'QF4'].map(lose), '5th-8th', 5); T.standings.forEach(x => set([x.id], '9th-16th (Group stage)', 9)); order = [champ, ru, lose('SF1'), lose('SF2')].filter(Boolean); }
             else if (T.format === 'MSI_DE') { champ = win('N'); ru = lose('N'); set([champ], 'Champion', 1); set([ru], 'Runner-up', 2); set([lose('M')], '3rd', 3); set([lose('L')], '4th', 4); set([lose('I'), lose('J')], '5th-6th', 5); set([lose('G'), lose('H')], '7th-8th', 7); T.standings.forEach(x => set([x.id], '9th-11th (Play-In)', 9)); order = [champ, ru, lose('M'), lose('L')]; }
             else if (T.format === 'CUP_GROUP_DE') { champ = win('J'); ru = lose('J'); set([champ], 'Champion', 1); set([ru], 'Runner-up', 2); set([lose('I')], '3rd', 3); set([lose('G')], '4th', 4); set([lose('F')], '5th', 5); set([lose('E')], '6th', 6); T.standings.forEach((s, i) => set([s.id], `#${i + 1} (Group stage)`, i + 1)); order = [champ, ru, lose('I'), lose('G')]; }
             else if (T.format === 'RS2_GROUPS_PI') {   // final order = seeds after the Play-In (seed 1 = leader of Group A)
@@ -6047,6 +6147,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
 
         async function simCurrentRound() {
             if (window.__simBusy) return;
+            { const wt = document.getElementById('tab-worldcup'); if (wt && !wt.classList.contains('hidden') && state.wc && !state.wc.done) { wcUi('round'); return; } }   // World Cup tab open: SIM ROUND plays the next World Cup round
             if (isRoundPending()) { proceedNextRound(); return; }   // results were reviewed: move on to the next round
             if (areAllParallelTournamentsDone()) { finishStage(); return; }   // final standings reviewed: close the event
             const st = stageNow();
@@ -6396,7 +6497,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
         }
 
         // ----- UI -----
-        const fmtLabel = T => ({ CUP_GROUP_DE: 'GROUP STAGE + DOUBLE ELIM', RS2_GROUPS_PI: T.lpl3 ? 'GROUPS A/B/C + PLAY-IN' : 'GROUPS A/B + PLAY-IN' })[T.format] || (T.rtm ? 'ROAD TO MSI (DOUBLE ELIM)' : T.format.replace(/_/g, ' '));
+        const fmtLabel = T => ({ EWC: 'GROUPS (BO5 DE) + KNOCKOUT', CUP_GROUP_DE: 'GROUP STAGE + DOUBLE ELIM', RS2_GROUPS_PI: T.lpl3 ? 'GROUPS A/B/C + PLAY-IN' : 'GROUPS A/B + PLAY-IN' })[T.format] || (T.rtm ? 'ROAD TO MSI (DOUBLE ELIM)' : T.format.replace(/_/g, ' '));
         // final-result rows (placement order, no W-L) for bracket events: Road to MSI, MSI, Regional Qualifier, Worlds
         function placementRows(T) {
             const p = computePlacements(T), pool = [...(T.standings || []), ...(T.piOut || [])], seen = new Set();
@@ -6432,6 +6533,9 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 wrap.innerHTML = tbl('Group A • seeds 1-' + gA.length, gA.map((s, i) => row(s, i, x => tag(i + 1))).join(''), 'Slot') + tbl('Group B • seeds ' + (gA.length + 1) + '-' + (gA.length + gB.length), gB.map((s, i) => row(s, gA.length + i, x => tag(gA.length + i + 1))).join(''), 'Slot') + `<div class="text-[10px] text-gray-500">Each team plays every group rival 3 times (Bo3). Seeds 1-4: straight to the Regional Qualifier. Seeds 5-8: Bo5 double-elimination Play-In for seeds 5 and 6.</div>`;
             } else if (T.format === 'WORLDS_SWISS') {
                 wrap.innerHTML = tbl(`Swiss Stage (R${Math.min(T.swissRound, 5)})`, [...T.standings].sort(swissCmp).map((s, i) => row(s, i, x => s.wins >= 3 ? '<span class="text-green-400">QUAL</span>' : s.losses >= 3 ? '<span class="text-red-400">OUT</span>' : '<span class="text-gray-500">•</span>')).join(''), 'Status');
+            } else if (T.format === 'EWC') {
+                const qa = T.qualIds || [];
+                wrap.innerHTML = ['A', 'B', 'C', 'D'].map(g => tbl(`Group ${g} (Bo5 double elimination)`, T.standings.filter(x => x.group === g).sort(leagueCmp).map((x, i) => row(x, i, () => qa.length ? (qa.includes(x.id) ? '<span class="text-green-400">Q</span>' : '<span class="text-gray-600">Out</span>') : '<span class="text-gray-500">&bull;</span>')).join(''), 'Adv')).join('') + `<div class="text-[10px] text-gray-500">GSL groups: 2 opening matches, a winners match, an elimination match and a decider. The top 2 of every group reach the knockout quarterfinals. No Elo is gained or lost in this event.</div>`;
             } else if (T.format === 'RTW_DOUBLE_ELIM' || T.format === 'MSI_DE') {
                 wrap.innerHTML = tbl(T.format === 'MSI_DE' ? 'MSI (Play-In + Double Elimination)' : 'Top 6 (Double Elimination)', T.standings.map((s, i) => row(s, i, x => x.points)).join(''), 'Pts');
             } else wrap.innerHTML = tbl('League Table', T.standings.map((s, i) => row(s, i, x => x.points)).join(''), 'Pts');
@@ -6757,6 +6861,15 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 body = `<div class="text-[10px] font-black text-gray-400 uppercase">Play-In &bull; seed 2 of the regions ranked #2-#5 (winner joins the bracket)</div>` + brkRender(T, BRK_PI_NODES, BRK_PI_EDGES, 5, 'PF', [['UPPER BRACKET', -0.4], ['LOWER BRACKET', 1.75]])
                     + `<div class="text-[10px] font-black text-gray-400 uppercase pt-2">MSI bracket &bull; 6 regional seed 1s + seed 2 of the #1 region + Play-In winner (seed 8)</div>` + brkRender(T, BRK_MSI8_NODES, BRK_MSI8_EDGES, 5, 'N', [['UPPER BRACKET', -0.4], ['LOWER BRACKET', 4.35]])
                     + `<div class="text-[10px] text-gray-500">Regions are ranked by average Elo at the end of the last World Championship. Bracket seeds are ordered by Elo. All series Bo5. Dashed red lines = drop to the lower bracket.</div>`;
+            } else if (T.format === 'EWC') {
+                title = 'Esports World Cup';
+                const nm = r => `<span class="${r.id === state.userTeamId ? 'text-lol-gold font-black' : 'text-white'}">${r.name}</span>`;
+                const ml = (m, lab) => m ? `<div class="flex justify-between gap-2 text-[10px] ${m.home.id === state.userTeamId || m.away.id === state.userTeamId ? 'bg-lol-gold/10' : ''} px-1 py-0.5 rounded"><span class="truncate">${nm(m.home)} <span class="text-gray-500">vs</span> ${nm(m.away)}</span><span class="shrink-0 ${m.completed ? 'text-green-400 font-bold' : 'text-gray-500'}">${m.completed ? m.score + ' ' + getTeamNameById(m.winner) : 'TBD'}</span></div>` : `<div class="text-[10px] text-gray-600 px-1 py-0.5">${lab}</div>`;
+                const gbox = g => `<div class="rounded-lg border border-lol-border p-2 space-y-0.5"><div class="text-[10px] font-black text-lol-gold uppercase">Group ${g}</div>${[['1', 'Opening'], ['2', 'Opening'], ['W', 'Winners match'], ['L', 'Elimination match'], ['D', 'Decider']].map(([k, lab]) => ml(T.byId['G' + g + k], lab + ' (TBD)')).join('')}</div>`;
+                const kos = [['QF1', 'QF1: A1 vs B2'], ['QF2', 'QF2: C1 vs D2'], ['QF3', 'QF3: B1 vs A2'], ['QF4', 'QF4: D1 vs C2'], ['SF1', 'SF1: W(QF1) vs W(QF2)'], ['SF2', 'SF2: W(QF3) vs W(QF4)'], ['F', 'Grand Final']];
+                body = `<div class="text-[10px] font-black text-gray-400 uppercase">Group stage &bull; 4 groups &bull; Bo5 double elimination (top 2 advance)</div><div class="grid grid-cols-1 md:grid-cols-2 gap-2">${['A', 'B', 'C', 'D'].map(gbox).join('')}</div>`
+                    + `<div class="text-[10px] font-black text-gray-400 uppercase pt-2">Knockout &bull; Bo5 single elimination</div><div class="rounded-lg border border-lol-border p-2 space-y-0.5">${kos.map(([id, lab]) => ml(T.byId[id], lab + ' (TBD)')).join('')}</div>`
+                    + `<div class="text-[10px] text-gray-500">16 teams: best 2 of every region by Road to MSI + the 3rd best of the 4 top regions. No Elo change; prize pool equal to MSI.</div>`;
             } else if (T.format === 'MSI_GROUPS') {
                 title = 'Mid-Season Invitational';
                 body = brkGroupTables(T) + brkRender(T, BRK_MSI_NODES, BRK_MSI_EDGES, 5, 'F', []);
@@ -7281,6 +7394,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
         }
         const _tileCls = (dis, prev) => `p-1.5 rounded flex flex-col items-center border transition-colors text-center text-xs font-bold ${
             dis ? 'bg-lol-navy/40 border-lol-border text-gray-600 opacity-40 cursor-not-allowed' : 'bg-lol-navy border-lol-border hover:border-lol-gold text-white hover:bg-lol-gold/10'}${prev ? ' ring-2 ring-lol-gold' : ''}`;
+        const _banEffHTML = () => '';   // removed: the "Enemy +x.x" line on ban tiles
         const _hintHTML = hint => hint.length ? `<span class="draft-hint text-[9px] text-green-400 font-bold truncate w-full" title="Synergy with: ${_escA(hint.map(h => h.champ.name).join(', '))}">&#128279; ${hint.map(h => h.champ.name).join(', ')}</span>` : '';
         function renderDraftChampGrid(filterTerm = "") {
             const grid = document.getElementById("draft-champ-grid");
@@ -7300,7 +7414,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             const action = getCurrentTurnAction();
             const isUserTurn = action && (action.startsWith('BB') || action.startsWith('BP'));
 
-            const pickingBlue = action && action.startsWith('BP');
+            const pickingBlue = action && action.startsWith('BP'), isBanTurn = action && action.startsWith('BB');
             const laneNow = ds.bluePicks[ds.selectedLaneForPick] ? LANE_ORDER.find(r => !ds.bluePicks[r]) : ds.selectedLaneForPick;
             const _q = (filterTerm || (document.getElementById("champ-search") || {}).value || "").toLowerCase(),
                 _tier = (document.getElementById("champ-tier-filter") || {}).value || "ALL",
@@ -7309,7 +7423,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             const sig = [_q, _tier, _lane, all.length, all.map(c => c.tier).join('')].join('|');
             const state1 = c => {
                 const dis = ds.usedChampsInSeries.has(c.name) || currentDraftChamps.has(c.name);   // unavailable champions only; available ones can always be inspected
-                return { dis, hint: pickingBlue && laneNow && !dis && isUserTurn ? linksWith(c, laneNow, ds.bluePicks) : [] };
+                return { dis, hint: pickingBlue && laneNow && !dis && isUserTurn ? linksWith(c, laneNow, ds.bluePicks) : [], eff: null };
             };
             if (grid._sig === sig && grid.firstElementChild) {
                 // same list of champions: only update the state of the existing tiles (keeps the <img> elements, no reload / re-decode)
@@ -7321,6 +7435,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                     if (b.disabled !== st.dis) b.disabled = st.dis;
                     const h = _hintHTML(st.hint), old = b.querySelector('.draft-hint');
                     if (h || old) { if (old) old.remove(); if (h) b.insertAdjacentHTML('beforeend', h); }
+                    { const eh = _banEffHTML(st.eff), oe = b.querySelector('.ban-eff'); if (eh || oe) { if (oe) oe.remove(); if (eh) b.insertAdjacentHTML('beforeend', eh); } }
                     const ev = b.querySelector('.champ-evt'), ek = champEvtOf(c.name);
                     if (ev && ev.dataset.k !== ek.g + '|' + ek.w) ev.outerHTML = champEvtTile(c);
                 }
@@ -7329,7 +7444,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 all.forEach(c => {
                     if (!(c.name.toLowerCase().includes(_q) && (_tier === "ALL" || c.tier === _tier) && (_lane === "ALL" || c.role === _lane || (c.alt || []).includes(_lane)))) return;
                     const st = state1(c), t = champTileInner(c);
-                    out.push(`<button type="button" data-champ="${_escA(c.name)}" title="${t.title}" class="${_tileCls(st.dis, ds.preview === c.name)}"${st.dis ? ' disabled' : ''}>${t.html}${champEvtTile(c)}${_hintHTML(st.hint)}</button>`);
+                    out.push(`<button type="button" data-champ="${_escA(c.name)}" title="${t.title}" class="${_tileCls(st.dis, ds.preview === c.name)}"${st.dis ? ' disabled' : ''}>${t.html}${champEvtTile(c)}${_hintHTML(st.hint)}${_banEffHTML(st.eff)}</button>`);
                 });
                 const top = grid.scrollTop;
                 grid.innerHTML = out.join('');
@@ -7466,6 +7581,27 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             const L = laneLinks(mine), link = laneLinkBonus(L), duo = L.filter(l => l.kind === 'duo').reduce((s, l) => s + l.v * DUO_FACTOR, 0);
             return { tier, lane, cls, link, duo, total: tier + lane + cls + link + duo };
         }
+        // BAN HELPER: how much draft value the ENEMY would get if it picked champion c (best free enemy lane), incl. what it takes away from your draft
+        function enemyBanThreat(c, ds) {
+            const sig = LANE_ORDER.map(r => (ds.bluePicks[r] || {}).name || '').join(',') + '|' + LANE_ORDER.map(r => (ds.redPicks[r] || {}).name || '').join(',');
+            if (ds._banThreatSig !== sig) { ds._banThreatSig = sig; ds._banThreat = new Map(); ds._banThreatBase = null; }
+            if (ds._banThreat.has(c.name)) return ds._banThreat.get(c.name);
+            const red = ds.redPicks, blue = ds.bluePicks, lanes = LANE_ORDER.filter(r => !red[r]);
+            let out = null;
+            if (lanes.length) {
+                const base = ds._banThreatBase || (ds._banThreatBase = { red: partialDraftParts(red, blue), blue: partialDraftParts(blue, red) });
+                const per = {};
+                lanes.forEach(r => {
+                    const w = Object.assign({}, red, { [r]: c }), a = partialDraftParts(w, blue), b = partialDraftParts(blue, w);
+                    const gain = a.total - base.red.total, take = base.blue.total - b.total, m = gain + take;
+                    per[r] = m;
+                    if (!out || m > out.m) out = { lane: r, m, gain, take, a, b, base, kind: laneKind(c, r) };
+                });
+                out.per = per;
+            }
+            ds._banThreat.set(c.name, out); return out;
+        }
+        const banThreatVerdict = m => m >= 3 ? ['MUST BAN', 'text-red-400'] : m >= 1.5 ? ['STRONG THREAT', 'text-orange-300'] : m >= 0.5 ? ['MODERATE THREAT', 'text-yellow-300'] : ['LOW THREAT', 'text-gray-300'];
         function renderChampDetail() {
             const box = document.getElementById('champ-detail'); if (!box) return;
             if (state.draftState && !getCurrentTurnAction()) { state.draftState.preview = null; box.style.maxHeight = '70%'; box.innerHTML = draftReviewHTML(state.draftState); return; }
@@ -7529,6 +7665,22 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                     <div class="grid grid-cols-2 gap-x-4">${row('Champion tier (' + c.tier + ')', before.tier, after.tier)}${row('Lane matchup' + (ds.redPicks[lane] ? ' vs ' + ds.redPicks[lane].name : ' (enemy not picked)'), before.lane, after.lane)}${row('Class edge vs enemy team', before.cls, after.cls)}${row('Lane links with your team', before.link, after.link)}${row('Bot duo synergy', before.duo, after.duo)}</div>
                 </div>`;
             }
+            let banPanel = '';
+            if (isBan && st === 'free') {
+                const e = enemyBanThreat(c, ds);
+                if (e) {
+                    const f = x => (x >= 0 ? '+' : '') + x.toFixed(1), vd = banThreatVerdict(e.m);
+                    const row = (name, bef, aft) => `<div class="flex justify-between text-[10px]"><span class="text-gray-400">${name}</span><span class="font-mono text-white">${f(aft - bef)}</span></div>`;
+                    const lanesTxt = Object.entries(e.per).sort((x, y) => y[1] - x[1]).map(([r, v]) => `<span class="px-1.5 py-0.5 rounded border text-[9px] font-bold ${r === e.lane ? 'border-red-400 bg-red-500/10 text-red-300' : 'border-lol-border text-gray-400'}">${r} ${f(v)}</span>`).join('');
+                    banPanel = `<div class="mb-2 bg-lol-cardBg border border-red-500/40 rounded-lg p-2 space-y-1.5">
+                        <div class="text-[10px] font-black uppercase text-red-300">Ban rating - if the enemy picks ${c.name}</div>
+                        <div class="flex items-center justify-between"><span class="text-sm font-black ${vd[1]}">${vd[0]}</span><span class="text-[11px] font-mono font-bold ${vd[1]}">${f(e.m)} draft value for the enemy (${e.lane})</span></div>
+                        <div class="flex flex-wrap gap-1">${lanesTxt}</div>
+                        <div class="text-[10px] text-gray-400">Enemy lead over you: <b class="text-white">${f(e.base.red.total - e.base.blue.total)}</b> now &rarr; <b class="${(e.a.total - e.b.total) > (e.base.red.total - e.base.blue.total) ? 'text-red-400' : 'text-green-400'}">${f(e.a.total - e.b.total)}</b> if they get it</div>
+                        <div class="grid grid-cols-2 gap-x-4">${row('Champion tier (' + c.tier + ')' + (e.kind === 'main' ? '' : e.kind === 'side' ? ' - side lane' : ' - off lane'), e.base.red.tier, e.a.tier)}${row('Lane matchup vs your picks', e.base.red.lane, e.a.lane)}${row('Class edge vs your team', e.base.red.cls, e.a.cls)}${row('Links with enemy picks', e.base.red.link, e.a.link)}${row('Bot duo synergy', e.base.red.duo, e.a.duo)}${row('Edge it takes from your draft', 0, e.take)}</div>
+                    </div>`;
+                }
+            }
             box.innerHTML = `
                 <div class="sticky top-0 z-10 -mt-2.5 -mx-2.5 px-2.5 pt-2.5 pb-1.5 mb-2 bg-lol-navy border-b border-lol-border flex items-center justify-between gap-2">
                     <div class="flex items-center space-x-2 min-w-0">
@@ -7545,7 +7697,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 ${lane && st === 'free' && !champFitsLane(c, lane) ? `<div class="mb-2 text-[10px] font-bold text-red-300">&#9888; ${c.name} is not a ${lane} champion (${[c.role, ...(c.alt || [])].join('/')}). Playing it in ${lane} costs the player -${OFFLANE_OVR_PENALTY} OVR in the game.</div>` : ''}
                 ${lane && st === 'free' && laneKind(c, lane) === 'main' ? `<div class="mb-2 text-[10px] font-bold text-green-400">&#10003; Main lane: ${c.name} is a ${lane} main (+${LANE_MAIN_BONUS} OVR).</div>` : ''}
                 ${lane && st === 'free' && laneKind(c, lane) === 'side' ? `<div class="mb-2 text-[10px] font-bold text-amber-400">&#8505; Side lane: ${c.name}'s main lane is ${c.role} (-${LANE_SIDE_PENALTY} OVR in ${lane}).</div>` : ''}
-                ${rating}
+                ${banPanel}${rating}
                 ${enemy.length ? sec('Vs the enemy picks so far', enemy.map(x => tag(`${x.r}: ${x.e.name} ${x.v > 0 ? 'you counter it (+' + x.v.toFixed(1) + ')' : 'it counters you (' + x.v.toFixed(1) + ')'}`, x.v > 0 ? 'border-green-500/40 bg-green-500/10 text-green-400' : 'border-red-500/40 bg-red-500/10 text-red-400')).join(''), 'text-cyan-300') : ''}
                 ${mine.length ? sec(`Links with your picks if played ${lane}`, mine.map(l => tag(`${l.lane}: ${l.champ.name} (${lbl(l.v)[0]})`, 'border-green-500/40 bg-green-500/10 text-green-400')).join(''), 'text-cyan-300') : ''}
                 ${sec('Strong duos (bot lane)', duos.length ? duos.map(([n, v]) => chip(n, v, true)).join('') : none)}
@@ -8049,6 +8201,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             return { bonus: b, tags, duo };
         }
         // one-time (per game) draft edge of a side: lane matchups + class counters + composition
+        const DRAFT_IMPACT = 1.7;   // multiplier on how much the draft (picks, counters, composition) decides the game
         function draftEdge(m, s) {
             if (!m.de) m.de = {};
             if (m.de[s] == null) {
@@ -8056,7 +8209,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 let mu = 0, cross = 0;
                 ROLES.forEach(r => { mu += champMatchup(mine.find(x => x.role === r).champ, theirs.find(x => x.role === r).champ); });
                 mine.forEach(a => theirs.forEach(b => { cross += groupEdge(a.champ, b.champ); }));
-                m.de[s] = mu * 0.8 + cross / 25 * 2.5 + compSynergy(mine).bonus + coachDraftEdge(s === 'blue' ? m.blueTeam : m.redTeam, s === 'blue' ? m.redTeam : m.blueTeam);
+                m.de[s] = DRAFT_IMPACT * (mu * 0.8 + cross / 25 * 2.5 + compSynergy(mine).bonus) + coachDraftEdge(s === 'blue' ? m.blueTeam : m.redTeam, s === 'blue' ? m.redTeam : m.blueTeam);
             }
             return m.de[s];
         }
@@ -8083,7 +8236,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
         function laneDiff(m, s, role, min) {
             const mine = sideChamps(m, s), theirs = sideChamps(m, oppSide(s));
             const f = (arr, r) => { const c = arr.find(x => x.role === r); return c.ovr + 0.2 * sDelta(c, c.role === 'Jungle' ? 'jgFarm' : c.role === 'Support' ? 'laneSupport' : 'laning') + champEdge(c, min) + invPower(c) / 500 + (c.playstyle === 'Aggressive' && min < 14 ? 0.8 : 0); };
-            const mu = r => 2.4 * (min < 14 ? 1 : 0.4) * champMatchup(mine.find(x => x.role === r).champ, theirs.find(x => x.role === r).champ);
+            const mu = r => 2.4 * DRAFT_IMPACT * (min < 14 ? 1 : 0.4) * champMatchup(mine.find(x => x.role === r).champ, theirs.find(x => x.role === r).champ);
             if (role === 'ADC' || role === 'Support') return 0.6 * (f(mine, 'ADC') - f(theirs, 'ADC') + mu('ADC')) + 0.4 * (f(mine, 'Support') - f(theirs, 'Support') + mu('Support')) + 2.2 * LINK_DUO_MULT * (min < 14 ? 1 : 0.5) * (compSynergy(mine).duo - compSynergy(theirs).duo);
             return f(mine, role) - f(theirs, role) + mu(role);
         }
@@ -9073,6 +9226,14 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             const m = state.liveMatch, c = myChamp(m), it = ITEMS[id]; if (!c || !it || m.done) return;
             if (it.type === 'B' && c.inv.some(i => i.id === id)) { addMatchLog(`You already own ${it.name}: only 1 of each completed item.`, "text-red-300"); return; }
             const { used, need } = psCost(c, it);
+            if (c.gold < need && it.comp && it.comp.length && !(it.type === 'B' && c.inv.some(i => i.id === id))) {   // lazy buy: cannot afford the whole item -> buy its missing components first (most expensive affordable one first)
+                const have = used.map(u => u.id), missing = [];
+                it.comp.forEach(cid => { const k = have.indexOf(cid); if (k >= 0) have.splice(k, 1); else missing.push(cid); });
+                let any = false;
+                missing.sort((a, b) => ITEMS[b].cost - ITEMS[a].cost).forEach(cid => { const ci = ITEMS[cid], cc = psCost(c, ci); if (c.gold >= cc.need && psRoom(c, cc.used)) { const g0 = c.gold; buyManual(cid); if (c.gold < g0) any = true; } });
+                if (!any) addMatchLog(`Not enough gold for ${it.name} or any of its missing components.`, "text-gray-400");
+                return;
+            }
             if (c.gold < need || !psRoom(c, used)) return;
             c.gold -= need; c.spent += need; c.inv = c.inv.filter(i => !used.includes(i)); addInv(c, id);
             addMatchLog(`🛒 ${c.name} bought ${it.name} (-${need}g).`, "text-green-300");
@@ -9106,7 +9267,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                     <span class="text-green-400 font-black text-xs font-mono">Gold: <span id="ps-gold">0</span></span>
                     <button type="button" onclick="buySuggested()" id="ps-sugg" class="px-2 py-0.5 rounded bg-lol-gold text-lol-navy text-[10px] font-black"></button>
                     <button type="button" onclick="togglePsAuto()" id="ps-auto" class="px-2 py-0.5 rounded border border-lol-border text-[10px] font-black"></button>
-                    <span class="text-[10px] text-gray-500">Click an item to buy it (components you own lower the price). Click an owned item to sell (70%).</span></div>
+                    <span class="text-[10px] text-gray-500">Click an item to buy it (components you own lower the price). If you cannot afford a completed item yet, clicking it buys its components first. Click an owned item to sell (70%).</span></div>
                     <div id="ps-inv" class="flex gap-1 mb-1.5"></div>
                     <div class="flex flex-wrap items-center gap-1 mb-1.5">${chip('type', 'ALL', 'All')}${chip('type', 'C', 'Components')}${chip('type', 'T', 'Boots')}${chip('type', 'B', 'Completed')}<span class="w-px h-4 bg-lol-border mx-1"></span>${chip('cls', 'ALL', 'Any class')}${chip('cls', 'AD', 'AD')}${chip('cls', 'AP', 'AP')}${chip('cls', 'TANK', 'Tank')}${chip('cls', 'SUP', 'Support')}
                     <input type="text" placeholder="Search..." oninput="state.liveMatch._psQ=this.value;psBuildGrid(state.liveMatch);state.liveMatch._psSig=null;renderPlayerShop(state.liveMatch)" class="ml-auto bg-lol-cardBg border border-lol-border rounded px-2 py-0.5 text-[11px] text-white w-32 focus:outline-none focus:border-lol-gold"></div>
@@ -9663,11 +9824,15 @@ function renderMetaTab() {
             }
         }
 
+        function paintBudget(el) {   // budget text is green normally, red when the budget is negative
+            if (!el) return; const neg = state.budget < 0;
+            el.classList.toggle('text-red-400', neg); el.classList.toggle('text-green-400', !neg);
+        }
         function updateHUD() {
             const userTeam = getUserTeamObj();
             const currStage = SEASON_STAGES[state.stageIndex];
             const showFin = gameMode() === 'MANAGER';   // club budget / profit & loss / debt only exist in Manager mode
-            document.getElementById("hud-budget").textContent = showFin ? `$${state.budget.toLocaleString()}` : '';
+            document.getElementById("hud-budget").textContent = showFin ? `$${state.budget.toLocaleString()}` : ''; paintBudget(document.getElementById("hud-budget"));
             { const pe = document.getElementById("hud-pnl"); if (pe && !showFin) pe.textContent = ''; else if (pe) { const d = yearPnL(); pe.textContent = `(${d.delta >= 0 ? '+' : '-'}$${Math.abs(Math.round(d.delta)).toLocaleString()} YTD)`; pe.className = 'text-[10px] font-bold ' + (d.delta >= 0 ? 'text-green-400' : 'text-red-400'); } }
             { const hl = document.getElementById("hud-team-logo"); if (hl) hl.innerHTML = teamLogo(userTeam, 22); }
             document.getElementById("hud-elo").textContent = Math.round(userTeam.elo || 1500);
@@ -9683,6 +9848,73 @@ function renderMetaTab() {
             if (pb) { pb.classList.toggle("hidden", !state.pendingSwitch); pb.textContent = state.pendingSwitch ? `→ ${pendingSwitchName()} after season ✕` : ''; }
             document.getElementById("hud-stage-progress").style.width = `${((state.stageIndex + 1) / SEASON_STAGES.length) * 100}%`;
             updateWcBadge(); updateFatigueHUD();
+            try { updateTodoBadge(); const tt = document.getElementById('tab-todo'); if (tt && !tt.classList.contains('hidden')) renderTodoTab(); } catch (e) {}
+        }
+
+
+        // ================= TO-DO LIST =================
+        // Auto tasks are computed from the game state (contracts, sponsors, training, offers, event); custom tasks are saved in the browser.
+        const TODO_KEY = 'lolmgr_todo_custom_v1';
+        function todoLoad() { try { const a = JSON.parse(localStorage.getItem(TODO_KEY) || '[]'); return Array.isArray(a) ? a : []; } catch (e) { return []; } }
+        function todoSave(a) { try { localStorage.setItem(TODO_KEY, JSON.stringify(a)); } catch (e) {} }
+        function todoAuto() {
+            const out = [], mode = gameMode(), add = (icon, color, title, sub, tab, btn) => out.push({ icon, color, title, sub, tab, btn });
+            if (typeof state === 'undefined' || !state || !state.teams) return out;
+            const st = SEASON_STAGES[state.stageIndex];
+            if (st) add('fa-flag-checkered', 'text-lol-brightBlue', `Play the event: ${st.name}`, `Round ${state.currentRound} / ${state.totalRounds} - simulate rounds or complete the event.`, 'tournament', 'Open');
+            if (mode === 'MANAGER') {
+                let ex = [], ec = [];
+                try { ex = expiringPlayers(); ec = (state.coaches || []).filter(c => coachYears(c) <= 1); } catch (e) {}
+                ex.forEach(x => add('fa-file-signature', 'text-yellow-300', `Sign contract: renew ${x.p.name}`, `${x.label}, ${x.p.ovr} OVR - contract ends after this season.`, 'roster', 'Renew'));
+                ec.forEach(c => add('fa-file-signature', 'text-yellow-300', `Sign contract: renew coach ${c.name}`, 'Coach contract ends after this season.', 'roster', 'Renew'));
+                const free = MAX_SPONSOR_SLOTS - (state.activeSponsors || []).length;
+                if (free > 0) add('fa-handshake', 'text-green-400', `Sign sponsors (${free} free slot${free > 1 ? 's' : ''})`, 'Sponsors pay you every event.', 'finances', 'Sponsors');
+                const locked = TRAINING_PROGRAMS.filter(pr => !(state.unlockedTraining || []).includes(pr.id));
+                if (locked.length) add('fa-dumbbell', 'text-orange-300', `Training: unlock a program (${locked.length} available)`, `${(state.unlockedTraining || []).length} / ${TRAINING_PROGRAMS.length} programs active - e.g. ${locked.slice(0, 2).map(x => x.name).join(', ')}.`, 'training', 'Training');
+                if ((state.coaches || []).length < 3) add('fa-user-tie', 'text-purple-300', 'Hire coaches', 'Coaching staff gives a draft edge over the enemy staff.', 'coachmarket', 'Coach Market');
+                const of = (state.offers || []).length;
+                if (of) add('fa-envelope-open-text', 'text-pink-300', `Answer transfer offers (${of})`, 'Other teams made offers for your players.', 'transfers', 'Transfers');
+            } else if (mode === 'PLAYER') {
+                add('fa-user-astronaut', 'text-lol-gold', 'Check your career', 'Contract, mood and offers.', 'career', 'My Career');
+            }
+            return out;
+        }
+        function updateTodoBadge() {
+            const b = document.getElementById('nav-todo-badge'); if (!b) return;
+            const n = todoAuto().length - 1 + todoLoad().filter(x => !x.done).length;   // the "play the event" task is always there, so do not count it
+            b.textContent = Math.max(0, n); b.classList.toggle('hidden', n <= 0);
+        }
+        function todoAdd() {
+            const el = document.getElementById('todo-input'); if (!el) return; const t = el.value.trim().slice(0, 120); if (!t) return;
+            const a = todoLoad(); a.push({ id: Date.now() + '' + Math.floor(Math.random() * 1000), text: t, done: false }); todoSave(a); renderTodoTab(); updateTodoBadge();
+            const e2 = document.getElementById('todo-input'); if (e2) e2.focus();
+        }
+        function todoToggle(id) { const a = todoLoad(), x = a.find(y => y.id === id); if (x) { x.done = !x.done; todoSave(a); renderTodoTab(); updateTodoBadge(); } }
+        function todoDel(id) { todoSave(todoLoad().filter(y => y.id !== id)); renderTodoTab(); updateTodoBadge(); }
+        function todoClearDone() { todoSave(todoLoad().filter(y => !y.done)); renderTodoTab(); updateTodoBadge(); }
+        function renderTodoTab() {
+            const root = document.getElementById('tab-todo'); if (!root) return;
+            const typing = document.activeElement && document.activeElement.id === 'todo-input', keep = typing ? document.activeElement.value : '';
+            const auto = todoAuto(), cust = todoLoad(), esc = x => String(x).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+            const autoRows = auto.map(a => `<div class="flex items-center justify-between gap-3 bg-lol-navy rounded-lg px-3 py-2 border border-lol-border">
+                    <div class="flex items-center gap-3 min-w-0"><i class="fa-solid ${a.icon} ${a.color} w-5 text-center"></i><div class="min-w-0"><div class="text-xs font-bold text-white">${esc(a.title)}</div><div class="text-[10px] text-gray-400">${esc(a.sub)}</div></div></div>
+                    <button onclick="switchTab('${a.tab}')" class="shrink-0 px-3 py-1 rounded-lg text-[10px] font-black bg-lol-brightBlue/20 text-lol-brightBlue border border-lol-brightBlue/40 hover:bg-lol-brightBlue/30">${esc(a.btn)} <i class="fa-solid fa-arrow-right ml-1"></i></button></div>`).join('');
+            const custRows = cust.map(c => `<div class="flex items-center gap-3 bg-lol-navy rounded-lg px-3 py-2 border border-lol-border">
+                    <input type="checkbox" ${c.done ? 'checked' : ''} onchange="todoToggle('${c.id}')" class="w-4 h-4 accent-yellow-400 cursor-pointer">
+                    <span class="flex-1 text-xs ${c.done ? 'line-through text-gray-500' : 'text-white font-bold'}">${esc(c.text)}</span>
+                    <button onclick="todoDel('${c.id}')" title="Delete" class="text-gray-500 hover:text-red-400"><i class="fa-solid fa-trash text-[11px]"></i></button></div>`).join('');
+            root.innerHTML = `<div><h2 class="text-3xl font-extrabold text-gradient-gold"><i class="fa-solid fa-list-check mr-2"></i>TO-DO LIST</h2>
+                    <p class="text-xs text-gray-400">Things that need your attention this season (contracts, sponsors, training, offers), plus your own tasks.</p></div>
+                <div class="bg-lol-cardBg border border-lol-border rounded-xl p-4 space-y-2">
+                    <div class="text-[11px] font-black uppercase tracking-widest text-lol-gold">Needs your attention <span class="text-gray-500">(${auto.length})</span></div>
+                    ${autoRows || '<div class="text-xs text-gray-400">Nothing urgent right now.</div>'}</div>
+                <div class="bg-lol-cardBg border border-lol-border rounded-xl p-4 space-y-2">
+                    <div class="flex items-center justify-between"><div class="text-[11px] font-black uppercase tracking-widest text-lol-gold">My tasks <span class="text-gray-500">(${cust.filter(x => !x.done).length} open)</span></div>
+                        ${cust.some(x => x.done) ? '<button onclick="todoClearDone()" class="text-[10px] font-bold text-gray-400 hover:text-white">Clear completed</button>' : ''}</div>
+                    <div class="flex gap-2"><input id="todo-input" type="text" maxlength="120" placeholder="Add a task (e.g. sign contract with ..., training plan ...)" onkeydown="if(event.key==='Enter')todoAdd()" class="flex-1 bg-lol-navy border border-lol-border rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-lol-gold">
+                        <button onclick="todoAdd()" class="px-4 py-2 rounded-lg text-xs font-black bg-gradient-to-r from-lol-gold to-lol-darkGold text-lol-navy"><i class="fa-solid fa-plus mr-1"></i>Add</button></div>
+                    ${custRows || '<div class="text-xs text-gray-500">No custom tasks yet.</div>'}</div>`;
+            if (typing) { const e = document.getElementById('todo-input'); if (e) { e.value = keep; e.focus(); } }
         }
 
         function switchTab(tabId) {
@@ -9691,7 +9923,7 @@ function renderMetaTab() {
             const selectedTab = document.getElementById(`tab-${tabId}`);
             if (selectedTab) selectedTab.classList.remove("hidden");
             
-            const navIds = ['info', 'invest', 'career', 'roster', 'finances', 'rankings', 'tournament', 'worldcup', 'allstandings', 'transfers', 'history', 'archive', 'training', 'meta', 'patchnotes', 'news', 'coachmarket'];
+            const navIds = ['todo', 'info', 'invest', 'career', 'roster', 'finances', 'rankings', 'tournament', 'worldcup', 'allstandings', 'transfers', 'history', 'archive', 'training', 'meta', 'patchnotes', 'news', 'coachmarket'];
             navIds.forEach(id => {
                 const navBtn = document.getElementById(`nav-${id}`);
                 if (navBtn) {
@@ -9701,6 +9933,7 @@ function renderMetaTab() {
             });
 
             if (tabId === 'tournament') renderTournamentUI();
+            else if (tabId === 'todo') renderTodoTab();
             else if (tabId === 'info') renderInfoTab();
             else if (tabId === 'rankings') renderEloRankings();
             else if (tabId === 'invest') renderInvestTab();
@@ -9792,7 +10025,7 @@ function renderMetaTab() {
             } catch (e) { console.error(e); }
         }
         function renderTransferTab() {
-            document.getElementById("transfer-budget-display").textContent = `$${state.budget.toLocaleString()}`;
+            document.getElementById("transfer-budget-display").textContent = `$${state.budget.toLocaleString()}`; paintBudget(document.getElementById("transfer-budget-display"));
             TF.role = state.transferRole || 'ALL';
             tfInitControls();
             renderTransferTable();
@@ -9901,6 +10134,7 @@ function renderMetaTab() {
             if (!st || typeof st !== 'object' || !st.teams || typeof st.teams !== 'object' || st.userTeamId == null || typeof st.year !== 'number' || !Object.values(st.teams).every(Array.isArray)) throw new Error('Save file is incomplete or corrupted');
             sanitizeState(st);
             if (snap.v === 1) migrateSaveV1(st);
+            if (!st.ewcStage) { if (st.stageIndex >= 4) st.stageIndex++; (st.stageHistory || []).forEach(h => { if (h.stageIndex >= 4) h.stageIndex++; }); st.ewcStage = true; }   // the Esports World Cup was inserted as event #5
             st.rtmSeeds = st.rtmSeeds || {};
             state = st; injectCblol(); syncMetaWithRoster(state); ensureUserCoaches(); faCounter = snap.faCounter || faCounter; if (typeof snap.rng === 'number') __rngS = snap.rng >>> 0;
             const land = document.getElementById('startup-landing'); if (land) land.classList.add('hidden');
