@@ -1566,7 +1566,7 @@ window.addEventListener('unhandledrejection', e => { console.error(e.reason); to
 // 1. IN-GAME ITEM CATALOG (starter / component / completed / boots)
         const ITEMS = {};
         const ICON_BY_CLS = { AD: 'fa-bolt text-red-400', AP: 'fa-wand-magic-sparkles text-purple-400', TANK: 'fa-shield-halved text-orange-400', SUP: 'fa-hand-holding-heart text-pink-300', BOOT: 'fa-shoe-prints text-cyan-300', JG: 'fa-paw text-green-400' };
-        const ITEM_IMG_ID = {dblade:1055,cull:1083,dring:1056,dseal:1082,dshield:1054,gust:1101,moss:1102,atlas:3865,lsword:1036,dagger:1042,recurve:1043,vamp:1053,hammer:3133,pickaxe:1037,bf:1038,amp:1052,blast:1026,nlr:1058,cloth:1029,mantle:1033,ruby:1028,chain:1031,belt:1011,kindle:3067,boots:1001,zerk:3006,sorc:3020,steel:3047,merc:3111,ionian:3158,IE:3031,BT:3072,LDR:3036,KS:6672,GF:6671,PD:3046,MR:3033,BC:3071,TF:3078,ECL:6692,DD:6333,STER:3053,GA:3026,RAB:3089,ZH:3157,LUX:6655,SFIRE:4645,VOID:3135,LIAN:6653,HORI:4628,MORE:3165,RYL:3116,BANS:3102,STORM:4646,COSM:4629,SUN:3068,THORN:3075,RAND:3143,JAK:6665,WARM:3083,FH:3110,SV:3065,FON:4401,GARG:3193,HS:3084,KAEN:2504,LOCK:3190,REDEMP:3107,KNIGHT:3109,MIK:3222,IMP:4005,ZEKE:3050,MOON:6617,SHUR:2065,ARD:3504,SOL:3876,sapph:1027,mcrystal:3070,faerie:1004,rejuv:1006,sheen:3057,zeal:3086,phage:3044,hexd:3155,oblivion:3916,dirk:6035,stopwatch:2420,negatron:1057,kircheis:2015,swift:3009,mobility:3117,MURA:3042,SERA:3040,NASH:3115,LICH:3100,MEJ:3041,ER:3508,NAV:6675,SHB:6673,RFC:3094,RUN:3085,STAT:3087,GUIN:3124,WIT:3091,MAW:3156,SER:6694,DMP:3742,CHEM:6664,PUT:3011,FLOW:6616,ANA:8001,hpot:2003,cward:2055,refill:2031,corrupt:2033,eiron:2138,esorc:2139,ewrath:2140,oracle:3364,swardt:3340,farsight:3363,BORK:3153,EON:3814,YOU:3142,SFANG:6695,AXIOM:6696,HUBRIS:6697,VOLT:6699,COLL:6676,CHEMP:6609,RHYD:3074,THYD:3748,PHYD:6698,STRIDE:6631,SUNDER:6610,DIVINE:6632,OVER:2501,HULL:3181,MERCS:3139,SHOJIN:3161,HEXPL:3073,TERM:3302,YUN:3032,ARCH:3003,ROA:6657,ROCKET:3152,RIFT:4633,NIGHT:4636,DEMON:4637,CROWN:4644,BLACKF:2503,ICEB:6662,ABYSS:8020,UNEND:2502};
+        const ITEM_IMG_ID = {dblade:1055,cull:1083,dring:1056,dseal:1082,dshield:1054,gust:1101,moss:1102,atlas:3865,lsword:1036,dagger:1042,recurve:1043,vamp:1053,hammer:3133,pickaxe:1037,bf:1038,amp:1052,blast:1026,nlr:1058,cloth:1029,mantle:1033,ruby:1028,chain:1031,belt:1011,kindle:3067,boots:1001,zerk:3006,sorc:3020,steel:3047,merc:3111,ionian:3158,IE:3031,BT:3072,LDR:3036,KS:6672,GF:6671,PD:3046,MR:3033,BC:3071,TF:3078,ECL:6692,DD:6333,STER:3053,GA:3026,RAB:3089,ZH:3157,LUX:6655,SFIRE:4645,VOID:3135,LIAN:6653,HORI:4628,MORE:3165,RYL:3116,BANS:3102,STORM:4646,COSM:4629,SUN:3068,THORN:3075,RAND:3143,JAK:6665,WARM:3083,FH:3110,SV:3065,FON:4401,GARG:3193,HS:3084,KAEN:2504,LOCK:3190,REDEMP:3107,KNIGHT:3109,MIK:3222,IMP:4005,ZEKE:3050,MOON:6617,SHUR:2065,ARD:3504,SOL:3876,sapph:1027,mcrystal:3070,faerie:1004,rejuv:1006,sheen:3057,zeal:3086,phage:3044,hexd:3155,oblivion:3916,dirk:6035,stopwatch:2420,negatron:1057,kircheis:2015,swift:3009,mobility:3117,MURA:3042,SERA:3040,NASH:3115,LICH:3100,MEJ:3041,ER:3508,NAV:6675,SHB:6673,RFC:3094,RUN:3085,STAT:3087,GUIN:3124,WIT:3091,MAW:3156,SER:6694,DMP:3742,CHEM:6664,PUT:3011,FLOW:6616,ANA:8001,hpot:2003,cward:2055,refill:2031,corrupt:2033,eiron:2138,esorc:2139,ewrath:2140,oracle:3364,swardt:3340,farsight:3363,BORK:3153,EON:3814,YOU:3142,SFANG:6695,AXIOM:6696,HUBRIS:6697,VOLT:6699,COLL:6676,CHEMP:6609,RHYD:3074,THYD:3748,PHYD:6698,STRIDE:6631,SUNDER:6610,DIVINE:6632,OVER:2501,HULL:3181,MERCS:3139,SHOJIN:3161,HEXPL:3073,TERM:3302,YUN:3032,ARCH:3003,ROA:6657,lchap:3802,MANA:3004,FIMB:3121,ROCKET:3152,RIFT:4633,NIGHT:4636,DEMON:4637,CROWN:4644,BLACKF:2503,ICEB:6662,ABYSS:8020,UNEND:2502};
         const ITEM_IMG_BASE = 'https://ddragon.leagueoflegends.com/cdn/14.22.1/img/item/';
         const itemIconHTML = (it, cls = 'w-8 h-8') => ITEM_IMG_ID[it.id]
             ? `<img src="${OFFLINE_ICONS.item[ITEM_IMG_ID[it.id]] || ITEM_IMG_BASE + ITEM_IMG_ID[it.id] + '.png'}" alt="${it.name}" data-itip="${it.id}" class="${cls} rounded object-cover" loading="lazy" onerror="itemImgFail(this,'${it.id}')">`
@@ -1611,6 +1611,7 @@ C|AD|dirk|Serrated Dirk|1100|AD & Lethality
 C|SUP|stopwatch|Stopwatch|650|Stasis active
 C|TANK|negatron|Negatron Cloak|800|+Magic Resist
 C|AP|kircheis|Kircheis Shard|700|AS & Energized
+C|AP|lchap|Lost Chapter|1200|AP, Mana & Haste
 T|AD|zerk|Berserker's Greaves|1100|AS & MS|boots,dagger
 T|AP|sorc|Sorcerer's Shoes|1100|Magic Pen & MS|boots,amp
 T|TANK|steel|Plated Steelcaps|1100|Armor & MS|boots,cloth
@@ -1708,6 +1709,8 @@ B|AD|TERM|Terminus|3000|On-hit Pen & Attack Speed|dagger,dagger
 B|AD|YUN|Yun Tal Wildarrows|3000|AD, Crit & Crit Stacks|dagger,pickaxe
 B|AP|ARCH|Archangel's Staff|3200|AP & Mana Stacking|mcrystal,amp
 B|AP|ROA|Rod of Ages|2600|AP, Health & Mana|amp,ruby
+B|AD|MANA|Manamune|2900|AD, Mana & Haste|mcrystal,pickaxe
+B|TANK|FIMB|Fimbulwinter|2500|Health, Mana & Shield|mcrystal,ruby
 B|AP|ROCKET|Hextech Rocketbelt|3200|AP, Health & Dash|blast,ruby
 B|AP|RIFT|Riftmaker|3100|AP, Health & Omnivamp|amp,ruby
 B|AP|NIGHT|Night Harvester|3200|AP, Health & Soul Burst|amp,ruby
@@ -2266,7 +2269,7 @@ Zoe|Portal Jump|40|30|stealth`;
             'Mordekaiser': { i: ['LIAN', 'RIFT', 'DEMON', 'ZH', 'COSM', 'VOID'], b: ['sorc'] },
             'Rumble': { i: ['LIAN', 'DEMON', 'RIFT', 'ZH', 'RYL', 'VOID'], b: ['sorc'] },
             'Swain': { i: ['LIAN', 'DEMON', 'RIFT', 'RYL', 'ZH', 'VOID'], b: ['sorc'] },   // heals + slows
-            'Vladimir': { i: ['RIFT', 'HORI', 'LIAN', 'ZH', 'RAB', 'SERA'], b: ['sorc'] },
+            'Vladimir': { i: ['RIFT', 'HORI', 'LIAN', 'ZH', 'RAB', 'VOID'], b: ['sorc'] },   // no mana: Seraph's replaced by Void Staff
             'Singed': { i: ['ROA', 'RYL', 'ZH', 'ABYSS', 'WARM', 'FH'], b: ['merc'] },   // slow field
             'Teemo': { i: ['LIAN', 'NASH', 'BLACKF', 'RYL', 'ZH', 'VOID'], b: ['sorc'] },
             'Kayle': { i: ['GUIN', 'NASH', 'RUN', 'LICH', 'ZH', 'RAB'], b: ['sorc'] },
@@ -8110,11 +8113,33 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 break;
             }
         }
+        // ---- mana items for AP / hybrid champions that really use mana ----
+        // champions on these classes that have NO mana (shield, energy, heat, fury, no resource ...) never get mana items
+        const NO_MANA_CHAMPS = new Set(['Mordekaiser', 'Gwen', 'Rumble', 'Kennen', 'Akali', 'Katarina', 'Kayn', 'Vladimir', 'Zac', 'Shyvana']);
+        const MANA_SET = new Set(['ARCH', 'SERA', 'MURA', 'MANA', 'ROA', 'FIMB']);
+        const MANA_CONFLICT = [['ARCH', 'SERA'], ['MURA', 'MANA']];   // Archangel's -> Seraph's and Manamune -> Muramana are the same upgrade line: never both
+        const MANA_POOL = {   // n = how many mana items the build should hold (the first one sits in the core top 3, the second a bit later)
+            Mage: { n: 2, items: ['ARCH', 'SERA', 'ROA', 'FIMB'] }, MageSupport: { n: 1, items: ['SERA', 'ARCH', 'FIMB'] },
+            APAssassin: { n: 1, items: ['ARCH', 'SERA'] }, APFighter: { n: 1, items: ['FIMB', 'ROA', 'SERA'] },
+            APTank: { n: 1, items: ['FIMB', 'ROA'] }, HybridFighter: { n: 1, items: ['MURA', 'MANA', 'FIMB'] }
+        };
+        function withMana(list, cls, name) {
+            const mp = MANA_POOL[cls]; if (!mp || NO_MANA_CHAMPS.has(name)) return list;
+            const have = list.filter(x => MANA_SET.has(x)), cand = mp.items.filter(x => !list.includes(x));
+            for (let k = have.length; k < mp.n && cand.length; k++) {
+                let id = null;
+                while (cand.length && !id) { const x = cand.splice(Math.floor(__rand() * cand.length), 1)[0]; if (!have.some(h => MANA_CONFLICT.some(p => p.includes(h) && p.includes(x)))) id = x; }
+                if (!id) break;
+                have.push(id); list.splice(Math.min(list.length, k ? 4 : 2), 0, id);
+            }
+            return list;
+        }
         function buildFor(role, cls, name) {
+            cls = cls || DEFAULT_CLASS[role];
             const cb = CLASS_BUILD[cls] || CLASS_BUILD[DEFAULT_CLASS[role]], ov = CHAMP_BUILD[name];
             const n = role === 'Support' ? 4 : 5, b = [pick(ov && ov.b ? ov.b : cb.boots)];
             if (ov) {   // champion kit first: core item from its top 3, then mostly its own list (80%), the class list fills the gaps
-                const own = ov.i.filter(x => ITEMS[x]), rest = cb.items.filter(x => !own.includes(x));
+                const own = withMana(ov.i.filter(x => ITEMS[x]), cls, name), rest = cb.items.filter(x => !own.includes(x));
                 if (own.length) b.push(own.splice(Math.floor(__rand() * Math.min(3, own.length)), 1)[0]);
                 while (b.length < n + 1 && (own.length || rest.length)) {
                     const src = own.length && (!rest.length || __rand() < 0.8) ? own : rest;
@@ -8122,7 +8147,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 }
                 return b;
             }
-            const pool = [...cb.items];
+            const pool = withMana([...cb.items], cls, name);
             if (pool.length) b.push(pool.splice(Math.floor(__rand() * Math.min(3, pool.length)), 1)[0]); // first = a core item of the class
             while (b.length < n + 1 && pool.length) b.push(pool.splice(Math.floor(__rand() * pool.length), 1)[0]);
             return b;
