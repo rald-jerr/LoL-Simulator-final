@@ -7796,6 +7796,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             _filterTimer = setTimeout(() => renderDraftChampGrid(document.getElementById("champ-search").value || ""), 120);
         }
 
+        const AI_SIDE_LANE_CHANCE = 0.08, AI_SIDE_LANE_PENALTY = 1.2;   // AI draft: side lanes are the exception
         function getBestAICandidate(targetRole = null) {
             const ds = state.draftState;
             const currentDraftChamps = new Set([
@@ -7809,12 +7810,16 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             if (targetRole) {
                 const roleChamps = available.filter(c => c.role.toLowerCase() === targetRole.toLowerCase() || (c.alt || []).includes(targetRole));
                 if (roleChamps.length > 0) candidates = roleChamps;
+                // AI rarely uses a side lane: only AI_SIDE_LANE_CHANCE of picks may consider flex champions, and only while enough main-lane champions are left
+                const mains = roleChamps.filter(c => c.role === targetRole);
+                if (mains.length >= 3 && __rand() >= AI_SIDE_LANE_CHANCE) candidates = mains;
             }
             const tierWeights = TIER_PICK_W;
             const blueTurn = (getCurrentTurnAction() || '').startsWith('B'), oppP = blueTurn ? ds.redPicks : ds.bluePicks, ownP = blueTurn ? ds.bluePicks : ds.redPicks;
             const q = coachSkill01(blueTurn ? getUserTeamObj() : ds.oppTeam), w = 1 + 0.6 * q;   // a better coaching staff = sharper draft reads (less noise, more weight on counters / synergy / threats)
             const score = c => {
                 let v = (tierWeights[c.tier] ?? 1) + __rand() * 0.4 * (1 - 0.6 * q);
+                if (targetRole && c.role !== targetRole) v -= AI_SIDE_LANE_PENALTY;   // a side-lane pick must be clearly better than the main-lane options
                 if (targetRole) {
                     if (oppP[targetRole]) v += champMatchup(c, oppP[targetRole]) * 1.5 * w;
                     if (targetRole === 'Support' && ownP.ADC) v += duoStrength(ownP.ADC.name, c.name) * 1.2 * LINK_DUO_MULT * w;
@@ -8271,6 +8276,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             m.clock = Math.round((m.clock + dt) * 1000) / 1000;
             let ran = false;
             while (!m.gameOver && m.clock >= m.gameTimeSeconds + 60) { advanceLiveMatchStep(); ran = true; }
+            if (!m.gameOver) spawnObjectives(m, m.clock);   // objectives spawn / despawn on the exact second (the engine only checks once per game minute, which froze the timer at "in 0:00")
             if (m.gameOver && m.clock > m.endSec) m.clock = m.endSec;
             flushLog(m);
             if (m.gameOver && m.clock >= m.endSec) { completeMatch(m); return; }
@@ -9889,7 +9895,7 @@ function evtPool() {
     const m = state.meta || [];
     if (_evtPool.ref !== m || _evtPool.len !== m.length) {
         const byRole = {}; ROLES.forEach(r => byRole[r] = []);
-        m.forEach(c => { if (byRole[c.role]) byRole[c.role].push([c, 1]); (c.alt || []).forEach(r => { if (r !== c.role && byRole[r]) byRole[r].push([c, 0.35]); }); });
+        m.forEach(c => { if (byRole[c.role]) byRole[c.role].push([c, 1]); (c.alt || []).forEach(r => { if (r !== c.role && byRole[r]) byRole[r].push([c, 0.06]); }); });
         _evtPool = { ref: m, len: m.length, all: m.map(c => [c, 1]), byRole };
     }
     return _evtPool;
