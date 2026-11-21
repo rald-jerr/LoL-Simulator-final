@@ -2246,6 +2246,66 @@ Zoe|Portal Jump|40|30|stealth`;
         };
         ALL_CHAMPIONS.forEach(c => { if (!c.cls) c.cls = CHAMP_CLASS[c.name] || DEFAULT_CLASS[c.role]; });
         // items are listed by priority: the first item bought is picked from the top 3 (core items), the rest at random from the remaining list
+        // Champion-specific item priority (by what the champion's kit needs): slows, dashes, on-hit, sustain, shields, burn, burst...
+        // i = items in priority order (the core item comes from the first 3), b = boots (optional). The rest of the build still comes from the class list.
+        const CHAMP_BUILD = {
+            // tanks: slows / anti-heal / reflect / burn
+            "K'Sante": { i: ['ICEB', 'FH', 'JAK', 'SUN', 'KAEN', 'GARG'], b: ['steel'] },   // empowered slow -> Iceborn + Frozen Heart
+            'Sejuani': { i: ['FH', 'ICEB', 'SUN', 'RAND', 'ABYSS', 'WARM'], b: ['steel'] },
+            'Rammus': { i: ['THORN', 'RAND', 'JAK', 'SUN', 'FH', 'GARG'], b: ['steel'] },   // reflect + anti-crit
+            'Galio': { i: ['ABYSS', 'ZH', 'RYL', 'SUN', 'BANS', 'WARM'], b: ['merc'] },
+            'Malphite': { i: ['ICEB', 'SUN', 'ZH', 'RYL', 'FH', 'JAK'], b: ['steel'] },
+            'Amumu': { i: ['LIAN', 'DEMON', 'SUN', 'WARM', 'ABYSS', 'RYL'], b: ['merc'] },   // burn
+            'Maokai': { i: ['LIAN', 'ABYSS', 'SUN', 'RYL', 'ZH', 'WARM'], b: ['merc'] },
+            "Cho'Gath": { i: ['LIAN', 'ROA', 'SUN', 'WARM', 'ABYSS', 'DEMON'], b: ['merc'] },
+            'Zac': { i: ['SUN', 'ABYSS', 'WARM', 'ICEB', 'RYL', 'DEMON'], b: ['merc'] },
+            'Nunu': { i: ['RYL', 'ABYSS', 'ZH', 'SUN', 'LIAN', 'BANS'], b: ['merc'] },
+            // AP fighters / mages: dash, sustain, burn, on-hit
+            'Sylas': { i: ['ROCKET', 'RIFT', 'NIGHT', 'ZH', 'RAB', 'LICH'], b: ['sorc'] },   // dash -> Rocketbelt, omnivamp -> Riftmaker
+            'Gwen': { i: ['NASH', 'RIFT', 'BLACKF', 'LIAN', 'ZH', 'VOID'], b: ['sorc'] },   // on-hit AP
+            'Mordekaiser': { i: ['LIAN', 'RIFT', 'DEMON', 'ZH', 'COSM', 'VOID'], b: ['sorc'] },
+            'Rumble': { i: ['LIAN', 'DEMON', 'RIFT', 'ZH', 'RYL', 'VOID'], b: ['sorc'] },
+            'Swain': { i: ['LIAN', 'DEMON', 'RIFT', 'RYL', 'ZH', 'VOID'], b: ['sorc'] },   // heals + slows
+            'Vladimir': { i: ['RIFT', 'HORI', 'LIAN', 'ZH', 'RAB', 'SERA'], b: ['sorc'] },
+            'Singed': { i: ['ROA', 'RYL', 'ZH', 'ABYSS', 'WARM', 'FH'], b: ['merc'] },   // slow field
+            'Teemo': { i: ['LIAN', 'NASH', 'BLACKF', 'RYL', 'ZH', 'VOID'], b: ['sorc'] },
+            'Kayle': { i: ['GUIN', 'NASH', 'RUN', 'LICH', 'ZH', 'RAB'], b: ['sorc'] },
+            'Kennen': { i: ['LIAN', 'HORI', 'ROCKET', 'ZH', 'VOID', 'RAB'], b: ['sorc'] },
+            'Fiddlesticks': { i: ['LIAN', 'BLACKF', 'NIGHT', 'HORI', 'ZH', 'VOID'], b: ['sorc'] },
+            'Brand': { i: ['LIAN', 'BLACKF', 'DEMON', 'HORI', 'VOID', 'RAB'], b: ['sorc'] },
+            'Cassiopeia': { i: ['ROA', 'HORI', 'LIAN', 'RAB', 'ZH', 'VOID'], b: ['sorc'] },
+            'Ahri': { i: ['LUX', 'ROCKET', 'SFIRE', 'HORI', 'VOID', 'ZH'], b: ['sorc'] },   // dash
+            'Akali': { i: ['LICH', 'ROCKET', 'NIGHT', 'SFIRE', 'ZH', 'VOID'], b: ['sorc'] },
+            'Ekko': { i: ['LICH', 'ROCKET', 'NIGHT', 'SFIRE', 'ZH', 'RAB'], b: ['sorc'] },
+            'Diana': { i: ['LICH', 'NIGHT', 'RIFT', 'SFIRE', 'ZH', 'VOID'], b: ['sorc'] },
+            // AD fighters / skirmishers: slow dashes, on-hit, shields, lifesteal
+            'Camille': { i: ['TF', 'STRIDE', 'STER', 'DD', 'BC', 'SER'], b: ['steel'] },
+            'Darius': { i: ['STRIDE', 'BC', 'STER', 'DD', 'SUN', 'GA'], b: ['steel'] },
+            'Renekton': { i: ['STRIDE', 'RHYD', 'TF', 'STER', 'DD', 'BC'], b: ['steel'] },
+            'Olaf': { i: ['STRIDE', 'BC', 'STER', 'DD', 'GA', 'SUN'], b: ['steel'] },
+            'Fiora': { i: ['RHYD', 'TF', 'STRIDE', 'SHB', 'DD', 'STER'], b: ['zerk', 'steel'] },
+            'Riven': { i: ['ECL', 'YOU', 'SHB', 'DD', 'STER', 'SER'], b: ['zerk', 'ionian'] },   // shield spells -> Eclipse
+            'Irelia': { i: ['BORK', 'TF', 'WIT', 'SHB', 'DD', 'STER'], b: ['zerk', 'ionian'] },   // on-hit + spellblade
+            'Viego': { i: ['BORK', 'RHYD', 'ECL', 'SHB', 'DD', 'STER'], b: ['zerk', 'ionian'] },
+            'Yasuo': { i: ['IE', 'NAV', 'SHB', 'RFC', 'GA', 'DD'], b: ['zerk'] },
+            'Yone': { i: ['IE', 'NAV', 'SHB', 'COLL', 'LDR', 'DD'], b: ['zerk'] },
+            'Tryndamere': { i: ['IE', 'NAV', 'BT', 'SHB', 'RFC', 'GA'], b: ['zerk'] },
+            'Master Yi': { i: ['GUIN', 'BORK', 'RUN', 'STAT', 'WIT', 'BT'], b: ['zerk'] },   // on-hit
+            "Bel'Veth": { i: ['BORK', 'GUIN', 'STAT', 'WIT', 'RUN', 'DD'], b: ['zerk'] },
+            'Nilah': { i: ['IE', 'SHB', 'BT', 'NAV', 'MERCS', 'GA'], b: ['zerk'] },
+            'Aatrox': { i: ['RHYD', 'SHB', 'STER', 'DD', 'CHEMP', 'BC'], b: ['steel', 'zerk'] },
+            'Lee Sin': { i: ['ECL', 'BC', 'STER', 'SER', 'DD', 'YOU'], b: ['steel'] },
+            // assassins: lethality
+            'Zed': { i: ['YOU', 'HUBRIS', 'AXIOM', 'SFANG', 'ECL', 'EON'], b: ['ionian'] },
+            'Talon': { i: ['YOU', 'COLL', 'HUBRIS', 'AXIOM', 'SFANG', 'EON'], b: ['ionian'] },
+            // marksmen: kit-specific
+            'Ezreal': { i: ['MURA', 'TF', 'ER', 'DIVINE', 'SHB', 'STER'], b: ['ionian', 'zerk'] },   // mana + spellblade poke
+            'Vayne': { i: ['BORK', 'KS', 'WIT', 'RUN', 'IE', 'GA'], b: ['zerk'] },   // on-hit true damage
+            'Jhin': { i: ['IE', 'COLL', 'RFC', 'LDR', 'GA', 'DD'], b: ['zerk'] },
+            'Jinx': { i: ['RFC', 'IE', 'PD', 'BT', 'NAV', 'GA'], b: ['zerk'] },
+            'Draven': { i: ['IE', 'BT', 'PD', 'LDR', 'MR', 'GA'], b: ['zerk'] },
+            'Lucian': { i: ['IE', 'ER', 'NAV', 'KS', 'GA', 'DD'], b: ['zerk'] }
+        };
         const CLASS_BUILD = {
             Fighter:     { boots: ['steel', 'merc'], items: ['TF', 'ECL', 'BC', 'STER', 'DD', 'SUN', 'GA', 'JAK'] },
             APFighter:   { boots: ['sorc', 'merc'], items: ['LIAN', 'RYL', 'ZH', 'COSM', 'STORM', 'BANS', 'SFIRE', 'VOID'] },
@@ -8050,9 +8110,19 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
                 break;
             }
         }
-        function buildFor(role, cls) {
-            const cb = CLASS_BUILD[cls] || CLASS_BUILD[DEFAULT_CLASS[role]];
-            const pool = [...cb.items], b = [pick(cb.boots)], n = role === 'Support' ? 4 : 5;
+        function buildFor(role, cls, name) {
+            const cb = CLASS_BUILD[cls] || CLASS_BUILD[DEFAULT_CLASS[role]], ov = CHAMP_BUILD[name];
+            const n = role === 'Support' ? 4 : 5, b = [pick(ov && ov.b ? ov.b : cb.boots)];
+            if (ov) {   // champion kit first: core item from its top 3, then mostly its own list (80%), the class list fills the gaps
+                const own = ov.i.filter(x => ITEMS[x]), rest = cb.items.filter(x => !own.includes(x));
+                if (own.length) b.push(own.splice(Math.floor(__rand() * Math.min(3, own.length)), 1)[0]);
+                while (b.length < n + 1 && (own.length || rest.length)) {
+                    const src = own.length && (!rest.length || __rand() < 0.8) ? own : rest;
+                    b.push(src.splice(Math.floor(__rand() * Math.min(src === own ? 3 : src.length, src.length)), 1)[0]);
+                }
+                return b;
+            }
+            const pool = [...cb.items];
             if (pool.length) b.push(pool.splice(Math.floor(__rand() * Math.min(3, pool.length)), 1)[0]); // first = a core item of the class
             while (b.length < n + 1 && pool.length) b.push(pool.splice(Math.floor(__rand() * pool.length), 1)[0]);
             return b;
@@ -8061,7 +8131,7 @@ Bjergsen:DK:1996 Doinb:KR:1997 Perkz:HR:1999 PowerOfEvil:DE:1996 Pawn:KR:1996 Ni
             const ch = champ && champ.tier ? champ : { name: champ ? champ.name : role, icon: '', tier: 'B', playstyle: 'Balanced' };
             const mood = rollMood(); player.mood = mood;
             const off = !champFitsLane(ch, role), lk = laneKind(ch, role), c = { role, laneKind: lk, name: player.name, champName: ch.name, icon: ch.icon || '', champ: ch, offLane: off, ovr: +Math.max(40, player.ovr * mood / 100 * chokeMult(player) + laneOvrAdj(ch, role)).toFixed(1), baseOvr: player.ovr, st: playerStats(player, role), mood, playstyle: fixPlaystyle(player, role),
-                k: 0, d: 0, a: 0, cs: 0, dmg: 0, gold: 500, spent: 0, xp: 0, level: 1, streak: 0, inv: [], build: buildFor(role, ch.cls), spells: spells.map(n => ({ n, cd: 0 })), respawn: 0, ultReadyAt: 0, ultUsedAt: null, ultUses: 0, isMe: !!(player && player.isUser && isPlayerMode()), autoBuy: false };
+                k: 0, d: 0, a: 0, cs: 0, dmg: 0, gold: 500, spent: 0, xp: 0, level: 1, streak: 0, inv: [], build: buildFor(role, ch.cls, ch.name), spells: spells.map(n => ({ n, cd: 0 })), respawn: 0, ultReadyAt: 0, ultUsedAt: null, ultUses: 0, isMe: !!(player && player.isUser && isPlayerMode()), autoBuy: false };
             const st = pick(STARTERS[role]); addInv(c, st); c.gold -= ITEMS[st].cost; c.spent += ITEMS[st].cost;
             return c;
         }
